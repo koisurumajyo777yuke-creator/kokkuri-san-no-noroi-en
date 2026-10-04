@@ -1,1 +1,938 @@
-A
+<!DOCTYPE html>
+
+<html lang="ja">
+
+<head>
+
+<meta charset="UTF-8"> 
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>学校の怪談シリーズ Ver.1 コックリさんの呪い</title>
+
+<style>
+
+* {
+
+  box-sizing: border-box;
+
+}
+
+body {
+
+  margin: 0;
+
+  background: #000;
+
+  color: #fff;
+
+  font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+
+  overflow: hidden;
+
+}
+
+.screen {
+
+  display: none;
+
+  position: relative;
+
+  width: 100vw;
+
+  height: 100dvh;
+
+  background: #000;
+
+}
+
+.screen.active {
+
+  display: flex;
+
+}
+
+#titleScreen {
+
+  align-items: center;
+
+  justify-content: center;
+
+}
+
+.full-image {
+
+  width: 100%;
+
+  height: 100%;
+
+  object-fit: cover;
+
+}
+
+
+
+@keyframes blink {
+
+  0%,100% { opacity: 1; }
+
+  50% { opacity: .35; }
+
+}
+
+#warningScreen {
+
+  padding: 30px 22px;
+
+  align-items: center;
+
+  justify-content: center;
+
+  text-align: center;
+
+}
+
+.warning-box {
+
+  max-width: 600px;
+
+  line-height: 1.9;
+
+  font-size: 16px;
+
+}
+
+.warning-title {
+
+  font-size: 22px;
+
+  margin-bottom: 22px;
+
+}
+
+button {
+
+  margin-top: 24px;
+
+  padding: 14px 28px;
+
+  border: 1px solid #aaa;
+
+  border-radius: 4px;
+
+  background: #111;
+
+  color: #fff;
+
+  font-size: 17px;
+
+}
+
+#storyScreen {
+
+  flex-direction: column;
+
+  justify-content: center;
+
+  align-items: center;
+
+}
+
+#storyImage {
+
+  width: 100%;
+
+  height: 100%;
+
+  object-fit: cover;
+
+}
+
+#textBox {
+
+  position: absolute;
+
+  left: 0;
+
+  right: 0;
+
+  bottom: 0;
+
+  min-height: 25%;
+
+  padding: 18px 20px 30px;
+
+  background: rgba(0,0,0,.72);
+
+  font-size: 17px;
+
+  line-height: 1.7;
+
+  white-space: pre-line;
+
+}
+
+#nextMark {
+
+  position: absolute;
+
+  right: 18px;
+
+  bottom: 8px;
+
+  font-size: 18px;
+
+  animation: blink 1.2s infinite;
+
+}
+.shake {
+
+  animation: shake 0.08s infinite;
+
+}
+
+@keyframes shake {
+
+  0%   { transform: translate(0, 0); }
+
+  25%  { transform: translate(-4px, 2px); }
+
+  50%  { transform: translate(4px, -2px); }
+
+  75%  { transform: translate(-3px, -2px); }
+
+  100% { transform: translate(3px, 2px); }
+
+}
+</style>
+
+</head>
+
+<body>
+
+<section id="titleScreen" class="screen active">
+
+  <img src="01_title.PNG" class="full-image" alt="">
+
+</section>
+
+<section id="warningScreen" class="screen">
+
+  <div class="warning-box">
+
+    <div class="warning-title">― ご注意 ―</div>
+
+    このゲームはフィクションです。<br>
+
+    作中には「コックリさん」を題材とした恐怖演出が登場します。<br><br>
+
+    実際にコックリさんを行ったり、真似したりしないでください。<br><br>
+
+    また、暗い画面演出・効果音・恐怖表現が含まれます。<br>
+
+    苦手な方はご注意ください。<br><br>
+
+    覚悟を決めて、お進みください。<br>
+
+    <button id="startButton">ゲームを始める</button>
+
+  </div>
+
+</section>
+
+<section id="storyScreen" class="screen">
+
+  <img id="storyImage" src="" alt="">
+
+  <div id="textBox">
+
+    <span id="storyText"></span>
+
+    <span id="nextMark">▼</span>
+
+  </div>
+
+</section>
+
+<audio id="schoolChime" preload="auto">
+
+  <source src="school_chime_base.wav" type="audio/wav">
+
+</audio>
+
+<script>
+
+const titleScreen = document.getElementById("titleScreen");
+
+const warningScreen = document.getElementById("warningScreen");
+
+const storyScreen = document.getElementById("storyScreen");
+
+const storyImage = document.getElementById("storyImage");
+
+const storyText = document.getElementById("storyText");
+
+const schoolChime = document.getElementById("schoolChime");
+
+let currentScene = 0;
+
+const scenes = [
+
+  {
+
+    image: "02_school_morning.PNG",
+
+    text: "いつもと変わらない朝だった。",
+
+    chime: true
+
+  },
+
+  {
+
+    image: "03_shoebox.PNG",
+
+    text: "生徒たちが次々と登校してくる。\n今日も、いつもの一日が始まる。"
+
+  },
+
+  { 
+
+    image: "04_hallway.PNG",
+
+    text: "廊下には、友達と話す声や笑い声が響いていた。"
+
+  },
+
+  {
+
+    image: "05_stairs_day.PNG",
+
+    text: "何度も上り下りしている、見慣れた階段。"
+
+  },
+
+  {
+
+    image: "06_classroom_day.PNG",
+
+    text: "休み時間。友達同士の話し声が、教室のあちこちから聞こえてくる。"
+
+  },
+
+  {
+
+    image: "07_artroom_day.PNG",
+
+    text: "図工室では、生徒たちが絵を描いていた。"
+
+  },
+
+  {
+
+    image: "08_scienceroom_day.PNG",
+
+    text: "理科室。\n壁際には、古い骨格標本が置かれている。"
+
+  },
+
+  {
+
+    image: "08b_skeleton_day.PNG",
+
+    text: "よく見ると……左手首の先がない。\n壊れたまま、ずっと置かれているらしい。"
+
+  },
+
+  {
+
+    image: "09_musicroom_day.PNG",
+
+    text: "音楽室から、誰かがピアノを練習する音が聞こえてくる。"
+
+  },
+
+  {
+
+    image: "06_classroom_day.PNG",
+
+    text: "そして、放課後――。"
+
+  },
+
+  {
+
+    image: "06_classroom_day.PNG",
+
+    text: "「今日の放課後に、昔流行った遊びやらない？」"
+
+  },
+
+  {
+
+    image: "06_classroom_day.PNG",
+
+    text: "「昔流行った遊び？」"
+
+  },
+
+  {
+
+    image: "10_kokkuri_day.PNG",
+
+    text: "「コックリさん。」"
+
+  },
+
+  {
+
+    image: "10_kokkuri_day.PNG",
+
+    text: "4人は机を囲んだ。\n十円玉に指を置き、しばらく待ってみる。"
+
+  },
+
+  {
+
+    image: "10_kokkuri_day.PNG",
+
+    text: "…………。"
+
+  },
+
+  {
+
+    image: "10_kokkuri_day.PNG",
+
+    text: "十円玉は、1ミリも動かなかった。"
+
+  },
+
+  {
+
+    image: "10_kokkuri_day.PNG",
+
+    text: "「ほら、迷信じゃーん」"
+
+  },
+
+  {
+
+    image: "10_kokkuri_day.PNG",
+
+    text: "すると、一人の男子が笑いながら言った。"
+
+  },
+
+  {
+
+    image: "10_kokkuri_day.PNG",
+
+    text: "「なんなら、4人で集まって夜やらないか？」"
+
+  },  
+  {
+
+    image: "11_school_night.PNG",
+
+    text: "――そして、夜。"
+
+  },
+
+  {
+
+    image: "11_school_night.PNG",
+
+    text: "「おい！こんな遅くに学校に入っていいのか？俺は知らんからな」"
+
+  },
+
+  {
+
+    image: "11_school_night.PNG",
+
+    text: "「大丈夫よ〜もう怖いの〜帰ってもいいわよ〜」"
+
+  },
+
+  {
+
+    image: "11_school_night.PNG",
+
+    text: "「怖くなんかねーよ　さー行こうぜ」"
+
+  },
+
+  {
+
+    image: "11_school_night.PNG",
+
+    text: "「コックリさんとやらのお手並み拝見だ！」"
+
+  },
+
+  {
+
+    image: "12_kokkuri_night.PNG",
+
+    text: "4人は、もう一度十円玉に指を置いた。"
+
+  },
+
+  {
+
+    image: "12_kokkuri_night.PNG",
+
+    text: "「コックリさん、コックリさん。\nおられましたら『はい』にお入り下さい」"
+
+  },
+
+  {
+
+    image: "12_kokkuri_night.PNG",
+
+    text: "…………。"
+
+  },
+
+  {
+
+    image: "13_kokkuri_yes.PNG",
+
+    text: "十円玉が――動いた。",
+coinSound: true
+  },
+{
+
+  image: "12_kokkuri_night.PNG",
+
+  text: "「コックリさん、コックリさん。\n一度鳥居にお戻り下さい」"
+
+},
+
+{
+
+  image: "12_kokkuri_night.PNG",
+
+  text: "十円玉は、ゆっくりと鳥居へ戻った。",
+coinSound: true
+},
+
+{
+
+  image: "12_kokkuri_night.PNG",
+
+  text: "…………。"
+
+},
+  
+
+{
+
+  image: "12_kokkuri_night.PNG",
+
+  text: "……誰も、何も聞いていない。\n\nその時――十円玉が勝手に動き始めた。"
+
+},
+
+{
+
+  image: "14_kokkuri_chi.PNG",
+
+  text: "あ……な……た……た……ち"
+
+},
+{
+
+    image: "14_kokkuri_chi.PNG",
+
+    text: "「もう怖いからやめようよ」\n\n「俺、マジで怖くなってきた。早くコックリさん戻そうよ」"
+
+},
+{
+
+    image: "12_kokkuri_night.PNG",
+
+    text: "「コックリさん、コックリさん。\n一度、鳥居にお戻り下さい」"
+
+},
+
+{
+
+    image: "12_kokkuri_night.PNG",
+
+    text: "十円玉は、ゆっくりと鳥居へ戻った。",
+
+    coinSound: true
+
+},
+  {
+
+    image: "12_kokkuri_night.PNG",
+
+    text: "「コックリさん、コックリさん。\nお帰り下さい」"
+
+},
+
+{
+
+    image: "15_kokkuri_no.PNG",
+
+    text: "……いいえ",
+
+    coinSound: true
+
+},{
+
+    image: "15_kokkuri_no.PNG",
+
+    text: "……いいえ",
+
+    coinSound: true
+
+},
+{image:"15_kokkuri_no.PNG", 
+  text: "…………いいえ",
+coinSound: true,
+ scaryNo: true
+  },
+
+{
+
+  image: "12_kokkuri_night.PNG",
+
+  text: "みんな！逃げろ！ここから早く脱出しよう‼️"
+
+},
+
+{
+
+  image: "16_toilet_night.PNG",
+
+  text: "「ダメだ！ここじゃないよ！」\n\n気がつくと、4人は誰もいないトイレの前に立っていた。",
+
+},
+
+{
+
+  image: "16_toilet_night.PNG",
+
+  text: "ピチャン……",
+waterDrop: true
+},
+  {
+
+  image: "17_toilet_door.PNG",
+
+  text: "コン……コン……コン……",
+
+  threeKnocks: true
+
+},{
+
+  image: "18_stairs_night.PNG",
+
+  text: "10……11……12……",
+stairFootsteps: true
+},{
+
+  image: "18_stairs_night.PNG",
+
+  text: "……13？"
+
+},{
+
+  image: "19_stairs_figure.PNG",
+
+  text: "……今、上に誰かいた？"
+
+},
+{
+
+  image: "20_science_night.PNG",
+
+  text: "ダメだ！ここじゃないよ！"
+
+},
+{
+
+  image: "20_science_night.PNG",
+
+  text: "……あれ？ 骨格標本の左手……戻ってる？"
+
+},
+{
+
+  image: "21_skeleton_closeup.PNG",
+
+  text: "……もう一度、骨格標本を見る",
+boneClick: true
+},
+
+{
+
+  image: "22_music_night.PNG",
+
+  text: "ダメだ！ここじゃないよ！",
+pianoSound: true
+},
+{
+
+  image: "23_beethoven.PNG?v=2",
+
+  text: "……肖像画を見る"
+
+},
+
+
+
+{
+
+  image: "24_four_corners.PNG",
+
+  text: "……気がつくと、元の教室に戻っていた。"
+
+},
+{
+
+  image: "25_four_corners_dark.PNG",
+
+  text: "……誰かが、歩いている。",
+fourCornersSound: true
+},
+{
+
+  image: "26_final_yes_coin.PNG",
+
+  text: "……",
+chime: true
+},
+  {
+
+  image: "26_final_yes_coin.PNG",
+
+  text: "……チャイム？"
+
+},
+
+{
+
+  image: "26_final_yes_coin.PNG",
+
+  text: "もしかして……出られるのか？"
+
+},
+{
+
+  image: "27_classroom_door.PNG",
+
+  text: "扉を開けてみる"
+},   
+{
+
+  image: "27_classroom_door.PNG",
+
+  text: "カチャ……。\n\n扉が、開いた。\n\n……外へ出られる。"
+
+},
+{
+
+  image: "27_classroom_door.PNG",
+
+  text: "― 最後に ―\n\nこの作品はフィクションです。\n作中に登場する出来事・怪異は、物語上の演出です。\n\n実際にコックリさんを行ったり、真似したりしないでください。\n\nこの物語は、ここで終わります。\n\n……どうか、学校の怪談は\n物語の中だけでお楽しみください。"
+
+},
+{
+
+  image: "27_classroom_door.PNG",
+
+  text: "制作：恋する魔女\n\nプログラム：ChatGPT\n\nグラフィック：ChatGPT\n\nアシスト：ChatGPT"
+
+
+},
+
+{
+
+  image: "27_classroom_door.PNG",
+
+  text: "The End"
+
+}
+
+];
+  
+
+
+
+
+
+
+
+
+  const coinSlideSound = new Audio("01_coin_slide.wav");
+
+coinSlideSound.preload = "auto";const waterDropSound = new Audio("02_water_drop.wav");
+
+waterDropSound.preload = "auto";
+ const threeKnocksSound = new Audio("03_three_knocks.wav");
+
+threeKnocksSound.preload = "auto";
+const stairFootstepsSound = new Audio("04_stair_footsteps.wav");
+
+stairFootstepsSound.preload = "auto";
+ const scienceScrapeSound = new Audio("05_science_scrape.wav");
+
+scienceScrapeSound.preload = "auto"; 
+const boneClickSound = new Audio("06_bone_click.wav");
+
+boneClickSound.preload = "auto";  
+const pianoSound = new Audio("07_piano_single_note.wav");
+
+pianoSound.preload = "auto";
+ const fourCornersSound = new Audio("08_four_corners_steps_and_tap.wav");
+
+fourCornersSound.preload = "auto"; 
+const doorUnlockSound = new Audio("09_door_unlock.wav");
+
+doorUnlockSound.preload = "auto";
+  
+titleScreen.addEventListener("click", () => {
+
+  titleScreen.classList.remove("active");
+
+  warningScreen.classList.add("active");
+
+});
+
+document.getElementById("startButton").addEventListener("click", (event) => {
+
+  event.stopPropagation();
+
+  warningScreen.classList.remove("active");
+
+  storyScreen.classList.add("active");
+
+  currentScene = 0;
+
+  showScene();
+
+});
+
+function showScene() {
+
+  const scene = scenes[currentScene];
+
+  storyImage.src = scene.image;
+
+  storyText.textContent = scene.text;
+storyText.style.color = "";
+
+storyText.classList.remove("shake");
+  if (scene.chime) {
+
+    schoolChime.currentTime = 0;
+
+    schoolChime.play().catch(() => {});
+}
+  if (scene.coinSound) {
+
+    coinSlideSound.currentTime = 0;
+
+    coinSlideSound.play().catch(() => {});
+
+}
+  if (scene.waterDrop) {
+
+    waterDropSound.currentTime = 0;
+
+    waterDropSound.play().catch(() => {});
+
+}
+if (scene.threeKnocks) {
+
+    threeKnocksSound.currentTime = 0;
+
+    threeKnocksSound.play().catch(() => {});
+
+}
+  if (scene.stairFootsteps) {
+
+    stairFootstepsSound.currentTime = 0;
+
+    stairFootstepsSound.play().catch(() => {});
+
+}
+  if (scene.scienceScrape) {
+
+  scienceScrapeSound.currentTime = 0;
+
+  scienceScrapeSound.play().catch(() => {});
+}
+ if (scene.boneClick) {
+
+    boneClickSound.currentTime = 0;
+
+    setTimeout(() => {
+
+        boneClickSound.play().catch(() => {});
+
+    }, 800);
+
+}
+  if (scene.pianoSound) {
+
+    pianoSound.currentTime = 0;
+
+    setTimeout(() => {
+
+        pianoSound.play().catch(() => {});
+
+    }, 500);
+
+}
+if (scene.fourCornersSound) {
+
+    fourCornersSound.currentTime = 0;
+
+    fourCornersSound.play().catch(() => {});
+
+}
+
+
+
+  if (scene.scaryNo) {
+
+  storyText.style.color = "red";
+
+  storyText.classList.add("shake");
+
+}
+}
+storyScreen.addEventListener("click", () => {
+
+    if (currentScene === scenes.length - 1) {
+
+        doorUnlockSound.currentTime = 0;
+
+        doorUnlockSound.play().catch(() => {});
+
+        
+
+    }
+
+    if (currentScene < scenes.length - 1) {
+
+        currentScene++;
+
+        showScene();
+
+    }
+
+});
+
+
+</script>
+
+</body>
+
+</html>
